@@ -266,9 +266,7 @@ int main(int argc, char **argv) {
 				"-v or --version\t\t\t\tDisplay version information\n"
 				"-h or --help\t\t\t\tDisplay this help screen.\n"
 				"Data directory:    " PROJECT_DATA_DIR "\n"
-				"Actors directory:  " ACTORS_DIR "\n"
-				"Devices directory: " DEVICES_DIR "\n"
-				"Inputs directory:  " INPUTS_DIR "\n"
+				"Devices Plugins directory: " DEVICES_DIR "\n"
 				"If -c or --config is not provided " PROJECT_NAME " will use " CONFIG_FILE
 				<< endl;
 			return EXIT_SUCCESS;
@@ -525,23 +523,30 @@ void Main::changeProfile(Profile* to, bool store) {
 		LogInfo("Terminating Profile " + currentProfile->getName());
 	}
 
-	// For transition disable inputs
-	auto gfb = Utility::globalFlags;
-	Utility::globalFlags = FLAG_NO_INPUTS;
-	// Get a transition to to or the ending transition using nullptr
-	Transition* transition = DataLoader::getTransitionFromCache(to ? currentProfile : nullptr);
-	transition->setTarget(to);
+	// Replacement profiles to itself voids transition.
+	if ((Utility::globalFlags & FLAG_FORCE_RELOAD) and currentProfile == to) {
+		to->reset();
+	}
+	else {
+		// For transition disable inputs
+		auto gfb = Utility::globalFlags;
+		Utility::globalFlags = FLAG_NO_INPUTS;
+		Transition* transition = DataLoader::getTransitionFromCache(to ? currentProfile : nullptr);
+		transition->setTarget(to);
 
-	while (true) {
-		// Frame begins.
-		start = high_resolution_clock::now();
-		if (not transition->run()) break;
-		sendData();
+		Utility::globalFlags = gfb;
+
+		// Run transition.
+		while (true) {
+			// Frame begins.
+			start = high_resolution_clock::now();
+			if (not transition->run()) break;
+			sendData();
+		}
 	}
 
 	if (replace) profiles.pop_back();
 	if (store) profiles.push_back(to);
 	currentProfile = to;
-	Utility::globalFlags = gfb;
 	if (to and not (Utility::globalFlags & FLAG_NO_INPUTS)) to->startInputs();
 }

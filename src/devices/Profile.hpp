@@ -72,6 +72,11 @@ public:
 	void reset();
 
 	/**
+	 * Clean up any temporary handled item (element input or group)
+	 */
+	void removeTemporaries();
+
+	/**
 	 * Start inputs.
 	 */
 	void startInputs();
@@ -104,6 +109,7 @@ public:
 
 	/**
 	 * Adds an input plugin to this profile.
+	 * The Profile now owns the input.
 	 * @param input
 	 */
 	void addInput(Input* input);

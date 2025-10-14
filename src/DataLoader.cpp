@@ -27,7 +27,6 @@
 using namespace LEDSpicer;
 
 ProfilePtrUMap    DataLoader::profilesCache;
-InputPtrUMap      DataLoader::inputCache;
 string            DataLoader::portNumber;
 milliseconds      DataLoader::waitTime;
 DataLoader::Modes DataLoader::mode = DataLoader::Modes::Normal;
@@ -537,6 +536,7 @@ void DataLoader::processTransition(Profile* profile, const StringUMap& settings)
 			case Curtain::ClosingWays::Both:
 				actorSettings["mode"] = "Curtain";
 			}
+			// ActorDriven takes ownership of the actor pointer.
 			Actor* actor = DataLoader::createAnimation(actorSettings);
 			transition = new Curtain(profile, actor);
 			break;
@@ -614,22 +614,14 @@ Actor* DataLoader::createAnimation(StringUMap& actorData) {
 
 void DataLoader::processInput(Profile* profile, const string& file) {
 
-	// Check cache.
-	if (not (Utility::globalFlags & FLAG_FORCE_RELOAD) and inputCache.exists(file)) {
-		LogDebug("Input from cache");
-		profile->addInput(inputCache.at(file));
-		return;
-	}
-
 	XMLHelper inputFile(createFilename(INPUT_DIR + file), "Input");
 	StringUMap inputAttr = processNode(inputFile.getRoot());
 	Utility::checkAttributes(REQUIRED_PARAM_NAME_ONLY, inputAttr, file);
 	string inputName = inputAttr[PARAM_NAME];
-	// If plugin is not loaded, load it.
-	if (not InputHandler::inputHandlers.exists(inputName))
-		InputHandler::inputHandlers.emplace(inputName, new InputHandler(inputName));
+
 	ItemPtrUMap inputMapTmp;
 
+	// Handle multi input
 	if (inputName == "Credits" or inputName == "Actions" or inputName == "Impulse" or inputName == "Blinker") {
 		// Multiple source inputs
 		auto listenEvents(processInputSources(inputName, inputFile.getRoot()));
@@ -651,11 +643,9 @@ void DataLoader::processInput(Profile* profile, const string& file) {
 		// Single source or malformed.
 		processInputMap(inputFile.getRoot(), inputMapTmp);
 	}
-	Input* input(InputHandler::inputHandlers[inputName]->createInput(inputAttr, inputMapTmp));
-	profile->addInput(input);
 
-	// Save Cache, replace previous value if any.
-	inputCache[file] = input;
+	// Profile now owns the input.
+	profile->addInput(createInput(inputAttr, inputMapTmp));
 }
 
 Device* DataLoader::createDevice(StringUMap& deviceData) {
@@ -726,6 +716,25 @@ void DataLoader::processInputMap(tinyxml2::XMLElement* inputNode, ItemPtrUMap& i
 			));
 		}
 	}
+}
+
+Input* DataLoader::createInput(StringUMap& inputData, ItemPtrUMap& inputMaps) {
+
+	string inputName = inputData["name"];
+
+	if (inputName == "Actions")
+		return new Actions(inputData, inputMaps);
+
+	if (inputName == "Credits")
+		return new Credits(inputData, inputMaps);
+
+	if (inputName == "Impulse")
+		return new Impulse(inputData, inputMaps);
+
+	if (inputName == "Blinker")
+		return new Blinker(inputData, inputMaps);
+
+	throw Utilities::Error(inputName) << " is not a valid input";
 }
 
 string DataLoader::createFilename(const string& name) {

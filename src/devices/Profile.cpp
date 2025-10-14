@@ -33,6 +33,11 @@ Profile::~Profile() {
 	cout << "Removing profile actors" << endl;
 #endif
 	for (auto a : animations) delete a;
+
+#ifdef DEVELOP
+	cout << "Removing profile inputs" << endl;
+#endif
+	for (auto i : inputs) delete i;
 }
 
 void Profile::addAnimation(const vector<Actor*>& animation) {
@@ -123,6 +128,10 @@ void Profile::reset() {
 	if (not (Utility::globalFlags & FLAG_NO_ANIMATIONS))
 		for (auto actor : animations) actor->restart();
 	if (not (Utility::globalFlags & FLAG_NO_INPUTS)) startInputs();
+	removeTemporaries();
+}
+
+void Profile::removeTemporaries() {
 	Profile::removeTemporaryOnGroups();
 	Profile::removeTemporaryOnElements();
 	Input::clearControlledInputs();

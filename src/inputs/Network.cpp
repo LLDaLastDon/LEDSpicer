@@ -24,8 +24,6 @@
 
 using namespace LEDSpicer::Inputs;
 
-inputFactory(Network)
-
 Socks Network::sock;
 
 void Network::activate() {

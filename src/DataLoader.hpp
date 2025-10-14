@@ -22,6 +22,7 @@
 
 #include "utilities/Messages.hpp"
 #include "utilities/XMLHelper.hpp"
+
 #ifdef ALSAAUDIO
 #include "animations/AlsaAudio.hpp"
 #endif
@@ -34,14 +35,20 @@
 #endif
 #include "animations/Random.hpp"
 #include "animations/Serpentine.hpp"
+
+#include "inputs/Actions.hpp"
+#include "inputs/Credits.hpp"
+#include "inputs/Impulse.hpp"
+#include "inputs/Blinker.hpp"
+
 #include "devices/transitions/FadeOutIn.hpp"
 #include "devices/transitions/CrossFade.hpp"
 #include "devices/transitions/Curtain.hpp"
 #include "devices/DeviceHandler.hpp"
-#include "inputs/InputHandler.hpp"
 
 #pragma once
 
+// data files location
 #define ACTOR_DIR   "/animations/"
 #define PROFILE_DIR "/profiles/"
 #define INPUT_DIR   "/inputs/"
@@ -234,9 +241,6 @@ protected:
 	/// Keeps references to profiles.
 	static ProfilePtrUMap profilesCache;
 
-	/// Keeps references to inputs (handled in input handlers).
-	static InputPtrUMap inputCache;
-
 	/// Stores the transitions for each unique profile.
 	static unordered_map<Profile*, Transition*> transitions;
 
@@ -303,6 +307,14 @@ protected:
 	 * @return
 	 */
 	static void processInputMap(tinyxml2::XMLElement* inputNode, ItemPtrUMap& inputMaps, const string& id = "");
+
+	/**
+	 * Creates an input from parameters.
+	 * @param inputData
+	 * @param inputMaps
+	 * @return
+	 */
+	static Input* createInput(StringUMap& inputData, ItemPtrUMap& inputMaps);
 
 	/**
 	 * Prepares the filenames.
