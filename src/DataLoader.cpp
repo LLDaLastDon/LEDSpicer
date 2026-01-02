@@ -548,14 +548,14 @@ void DataLoader::processTransition(Profile* profile, const StringUMap& settings)
 	}
 	if (not transition) throw Utilities::Error("Invalid Transition");
 	// Save Cache, replace previous value if any.
-	removeTransitionFromCache(profile);
+	removeTransitionFromCache(profile, true);
 	transitions[profile] = transition;
 }
 
-void DataLoader::removeTransitionFromCache(Profile* profile) {
+void DataLoader::removeTransitionFromCache(Profile* profile, bool deleteTransition) {
 	auto it = transitions.find(profile);
 	if (it != transitions.end()) {
-		delete it->second;
+		if (deleteTransition) delete it->second;
 		transitions.erase(it);
 	}
 }
@@ -773,6 +773,11 @@ void DataLoader::setInterval(uint8_t waitTime) {
 }
 
 void DataLoader::destroyCache() {
+
+	// Remove profile's transitions.
+	for (const auto& t : transitions) delete t.second;
+	transitions.clear();
+
 	for (auto p : profilesCache) {
 #ifdef DEVELOP
 		LogDebug("Profile " + p.first + " instance deleted");
@@ -780,10 +785,6 @@ void DataLoader::destroyCache() {
 		delete p.second;
 	}
 	profilesCache.clear();
-
-	// Remove profile's transitions.
-	for (auto t : transitions) delete t.second;
-	transitions.clear();
 #ifdef DEVELOP
 		LogDebug("Transitions deleted");
 #endif

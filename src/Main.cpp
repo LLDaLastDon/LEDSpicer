@@ -77,9 +77,9 @@ void Main::run() {
 		Profile* blank = new Profile("", Color::Off);
 		currentProfile = blank;
 		DataLoader::addTransitionIntoCache(blank, from);
-		changeProfile(Profile::defaultProfile, true);
+		changeProfile(Profile::defaultProfile, false);
 		// Remove blank
-		DataLoader::removeTransitionFromCache(blank);
+		DataLoader::removeTransitionFromCache(blank, false);
 		delete blank;
 	}
 	else {
@@ -429,7 +429,7 @@ Profile* Main::tryProfiles(const vector<string>& data) {
 				profile = DataLoader::processProfile(profileName);
 				// Update any reference.
 				if (oldProfile) {
-					DataLoader::removeTransitionFromCache(oldProfile);
+					DataLoader::removeTransitionFromCache(oldProfile, true);
 					// Check default profile and current profile.
 					if (oldProfile == Profile::defaultProfile) Profile::defaultProfile = profile;
 					if (oldProfile == currentProfile) currentProfile = profile;

@@ -190,8 +190,9 @@ public:
 	/**
 	 * Removes a transition from the cache and frees its memory.
 	 * @param profile the profile that owns the transition in cache.
+	 * @param deleteTransition true to delete the instance.
 	 */
-	static void removeTransitionFromCache(Profile* profile);
+	static void removeTransitionFromCache(Profile* profile, bool deleteTransition);
 
 	/**
 	 * Reads an animation file.
