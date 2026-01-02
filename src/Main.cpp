@@ -70,12 +70,14 @@ void Main::run() {
 	LogInfo(PROJECT_NAME " Running");
 
 	// Run initial profile if any.
+	Profile::defaultProfile->reset();
 	Transition* from = DataLoader::getTransitionFromCache(Profile::defaultProfile);
 	if (from) {
 		LogInfo("Initializing with transition from profile " + Profile::defaultProfile->getName());
 		// Create a temporary blank profile with default profile transition and run it.
-		Profile* blank = new Profile("", Color::Off);
+		Profile* blank = new Profile("None", Color::Off);
 		currentProfile = blank;
+		currentProfile->reset();
 		DataLoader::addTransitionIntoCache(blank, from);
 		changeProfile(Profile::defaultProfile, false);
 		// Remove blank
@@ -84,7 +86,6 @@ void Main::run() {
 	}
 	else {
 		currentProfile = Profile::defaultProfile;
-		currentProfile->reset();
 	}
 	while (running) {
 
