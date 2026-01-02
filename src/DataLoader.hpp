@@ -168,6 +168,13 @@ public:
 	static Profile* processProfile(const string& name, const string& extra = "");
 
 	/**
+	 * Adds a transition into the cache.
+	 * @param profile
+	 * @param transition
+	 */
+	static void addTransitionIntoCache(Profile* profile, Transition* transition);
+
+	/**
 	 * @param profile
 	 * @return the transition for this profile or null.
 	 */

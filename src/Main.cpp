@@ -68,8 +68,24 @@ void signalHandler(int sig) {
 void Main::run() {
 
 	LogInfo(PROJECT_NAME " Running");
-	currentProfile = Profile::defaultProfile;
-	currentProfile->reset();
+
+	// Run initial profile if any.
+	Transition* from = DataLoader::getTransitionFromCache(Profile::defaultProfile);
+	if (from) {
+		LogInfo("Initializing with transition from profile " + Profile::defaultProfile->getName());
+		// Create a temporary blank profile with default profile transition and run it.
+		Profile* blank = new Profile("", Color::Off);
+		currentProfile = blank;
+		DataLoader::addTransitionIntoCache(blank, from);
+		changeProfile(Profile::defaultProfile, true);
+		// Remove blank
+		DataLoader::removeTransitionFromCache(blank);
+		delete blank;
+	}
+	else {
+		currentProfile = Profile::defaultProfile;
+		currentProfile->reset();
+	}
 	while (running) {
 
 		// Frame begins.

@@ -481,6 +481,10 @@ Profile* DataLoader::processProfile(const string& name, const string& extra) {
 	return profilePtr;
 }
 
+void DataLoader::addTransitionIntoCache(Profile* profile, Transition* transition) {
+	transitions[profile] = transition;
+}
+
 Transition* DataLoader::getTransitionFromCache(Profile* profile) {
 	if (transitions.exists(profile)) return transitions.at(profile);
 	return nullptr;
